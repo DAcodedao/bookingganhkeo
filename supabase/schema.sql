@@ -41,7 +41,7 @@ create table if not exists public.walk_ins (
   completed_at timestamptz,
   staff_name text not null,
   constraint walk_ins_status_check
-    check (status in ('arrived', 'completed'))
+    check (status in ('arrived', 'completed', 'cancelled'))
 );
 
 create index if not exists walk_ins_date_time_idx
@@ -99,18 +99,18 @@ alter table public.bookings add constraint bookings_status_check
 alter table public.bookings alter column status set default 'confirmed';
 
 -- 2.3 Trạng thái khách lẻ
--- Giao diện chỉ dùng 'arrived' (đang ngồi) và 'completed' (hoàn tất).
+-- Khách lẻ có thể đang phục vụ, hoàn tất hoặc bị hủy.
 update public.walk_ins
-  set status = case when status = 'completed' then 'completed' else 'arrived' end
-  where status not in ('arrived', 'completed');
+  set status = case when status in ('completed', 'cancelled') then status else 'arrived' end
+  where status not in ('arrived', 'completed', 'cancelled');
 
 update public.walk_ins
   set completed_at = coalesce(completed_at, now())
-  where status = 'completed' and completed_at is null;
+  where status in ('completed', 'cancelled') and completed_at is null;
 
 alter table public.walk_ins drop constraint if exists walk_ins_status_check;
 alter table public.walk_ins add constraint walk_ins_status_check
-  check (status in ('arrived', 'completed'));
+  check (status in ('arrived', 'completed', 'cancelled'));
 alter table public.walk_ins alter column status set default 'arrived';
 
 -- ------------------------------------------------------------
