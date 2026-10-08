@@ -105,6 +105,100 @@
     .stat-detail-row strong{color:var(--ink);font-size:11px}
     @media(max-width:700px){.stats{grid-template-columns:1fr;gap:8px;margin-bottom:12px}.stat{padding:10px 9px;min-height:120px}.stat-top{font-size:9px}.stat-value{font-size:19px;min-height:32px}.stat-foot{font-size:8.5px;-webkit-line-clamp:3;line-clamp:3}.stat-split{gap:8px}.stat-main strong{font-size:24px}.stat-main span{font-size:9px}.stat-detail-row{font-size:9px}}
   </style>
+  <style>
+    :root{--bg:#edf1ed;--paper:#fbfcf9;--ink:#1c2822;--muted:#66736c;--line:#dce4dd;--green:#28634c;--green-2:#e6efe9;--lime:#e5c875;--brand-gold:#dfbd68;--brand-soft:#e9eee8;--brand-ink:#202820;--shadow:0 10px 28px rgba(22,38,29,.055)}
+    [data-theme="dark"]{--bg:#151c18;--paper:#202923;--ink:#edf2ed;--muted:#aab7ad;--line:#354239;--green:#9bc7a9;--green-2:#2a3a30;--lime:#efd27a;--brand-gold:#e4c36f;--brand-soft:#2a372f;--brand-ink:#202820;--shadow:0 14px 32px rgba(0,0,0,.22)}
+    body{font-size:14px;background:var(--bg)}
+    .sidebar{width:232px;padding:22px 14px 16px;background:#17271f;background-image:linear-gradient(160deg,#1d3026 0%,#14221b 62%,#111d17 100%);border-right:1px solid #ffffff12}
+    .main{margin-left:232px}
+    .brand{padding-bottom:20px}
+    .brand-name,.page-title,.panel-title,.modal-title,.auth-panel h1,.table-detail-head .title,.confirm-title{font-family:"Playfair Display",serif;letter-spacing:0}
+    .brand-sub{letter-spacing:.08em}
+    .nav-label{padding-top:20px;letter-spacing:.12em}
+    .nav-btn{min-height:40px;border-radius:7px}
+    .nav-btn.active{background:#2c4135}
+    .topbar{height:62px;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(12px);border-bottom-color:var(--line)}
+    .crumb{font-size:12px}
+    .top-range{box-shadow:0 2px 8px rgba(24,40,30,.035)}
+    .content{max-width:1600px;margin:0 auto;padding:25px 30px 32px}
+    .page-head{align-items:flex-end;margin-bottom:16px}
+    .eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+    .page-title{font-size:30px;line-height:1.14}
+    .page-sub{font-size:12px}
+    .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .stat{min-height:126px;padding:13px 14px;border-radius:9px;box-shadow:none}
+    .stat:hover{border-color:color-mix(in srgb,var(--green) 38%,var(--line));transform:translateY(-2px);box-shadow:0 10px 22px rgba(27,50,36,.07)}
+    .stat-icon{border-radius:7px}
+    .stat-value{font-size:25px}
+    .grid-main,.report-grid,.settings-grid{gap:12px}
+    .panel{border-radius:9px;box-shadow:none}
+    .panel-head{min-height:58px;padding:13px 16px;background:transparent;border-bottom:1px solid var(--line)}
+    .panel-body{padding:14px 16px}
+    .panel-title{font-size:17px}
+    .panel-note{font-size:11px}
+    .btn{height:36px;border-radius:7px;font-size:12px}
+    .btn.primary{background:var(--brand-gold);border-color:var(--brand-gold)}
+    .btn.primary:hover{filter:brightness(1.06);box-shadow:0 7px 18px rgba(197,160,73,.22)}
+    .table-card{border-radius:8px;box-shadow:none}
+    .table-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--green) 48%,var(--line));box-shadow:0 9px 18px rgba(26,46,34,.07)}
+    .table-id{font-size:15px}
+    .slot{border-radius:5px}
+    .data-table th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+    .data-table tr:hover td{background:color-mix(in srgb,var(--green-2) 48%,var(--paper))}
+    .booking-row,.overview-booking-row,.walkin-row{transition:background-color .18s,border-color .18s}.booking-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;min-width:0}.table-visit-row{display:grid;grid-template-columns:54px minmax(0,1fr) max-content;grid-template-areas:"time info status" "time info actions";gap:8px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.table-visit-row>.time-mark{grid-area:time;width:auto;min-width:0}.table-visit-row>.booking-info{grid-area:info;display:grid;gap:3px;min-width:0}.table-visit-row>.booking-info strong,.table-visit-row>.booking-info small{white-space:normal;overflow-wrap:anywhere}.table-visit-row>.status{grid-area:status;justify-self:end}.table-visit-row>.booking-actions{grid-area:actions}
+    .booking-row:hover,.overview-booking-row:hover{background:color-mix(in srgb,var(--green-2) 55%,var(--paper))}
+    .modal{border-radius:11px;box-shadow:0 24px 70px rgba(15,28,20,.2)}
+    .modal-head{border-bottom:1px solid var(--line)}
+    .modal-foot{border-top:1px solid var(--line)}
+    .field input,.field select,.field textarea,.toolbar-search input,.filter-select{border-radius:7px}
+    .mobile-nav{box-shadow:0 -6px 22px rgba(19,35,25,.07);backdrop-filter:blur(12px)}
+    .mobile-nav .nav-btn.active{background:var(--brand-soft);color:var(--green)}
+    .mobile-nav .nav-btn.active svg{color:var(--green)}
+    .auth-screen{position:relative;overflow:hidden;background-color:var(--bg);background-image:repeating-linear-gradient(135deg,transparent 0 30px,color-mix(in srgb,var(--green) 3%,transparent) 30px 31px)}
+    .auth-panel{position:relative;z-index:1;border-radius:10px;border-top:3px solid var(--brand-gold);box-shadow:0 24px 70px rgba(24,41,30,.11);animation:dialog-in .42s cubic-bezier(.2,.7,.25,1) both}
+    .page-head,.stats,.grid-main,.report-grid,.settings-grid{animation:surface-in .42s cubic-bezier(.2,.7,.25,1) both}
+    .stats .stat{animation:surface-in .42s cubic-bezier(.2,.7,.25,1) both}
+    .stats .stat:nth-child(2){animation-delay:45ms}.stats .stat:nth-child(3){animation-delay:90ms}.stats .stat:nth-child(4){animation-delay:135ms}
+    .backdrop,.confirm-backdrop{animation:veil-in .18s ease-out both}
+    .modal,.confirm-dialog{animation:dialog-in .24s cubic-bezier(.2,.7,.25,1) both}
+    @keyframes surface-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes veil-in{from{opacity:0}to{opacity:1}}
+    @keyframes dialog-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+    [data-theme="dark"] .topbar{background:color-mix(in srgb,var(--paper) 92%,transparent)}
+    [data-theme="dark"] .sidebar{background:#111a15;background-image:linear-gradient(160deg,#1a2b20 0%,#111a15 72%)}
+    [data-theme="dark"] .modal{box-shadow:0 24px 70px rgba(0,0,0,.48)}
+    @media(max-width:1050px){.sidebar{width:210px}.main{margin-left:210px}.content{padding:22px 23px 28px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:700px){.main{margin:0}.topbar{height:56px}.crumb{display:none}.top-actions{width:100%;min-width:0;justify-content:flex-end;gap:5px}.top-range{flex:none;gap:3px!important;padding:3px 4px!important}.top-date{width:92px!important;min-width:0;font-size:9px}.content{padding:17px 14px 25px}.page-head{align-items:flex-start;gap:12px}.page-title{font-size:25px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stat{min-height:124px;padding:11px}.stat-top{font-size:9px}.stat-value{font-size:21px;min-height:30px}.stat-foot{font-size:9px}.stat-detail-row{font-size:9px}.panel-head{padding:12px}.panel-body{padding:12px}.mobile-nav{height:64px;padding-bottom:env(safe-area-inset-bottom)}.mobile-nav .nav-btn{font-size:9px}.mobile-nav .nav-btn span:not(.nav-count){font-size:9px}.modal{border-radius:10px}}
+    @media(max-width:390px){.content{padding-right:11px;padding-left:11px}.stats{gap:7px}.stat{min-height:118px;padding:9px}.stat-value{font-size:19px}.stat-foot{font-size:8px}.page-title{font-size:23px}}
+    @media(max-width:700px){.modal:has([data-action="edit-walk-in-detail"]) .modal-foot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 12px}.modal:has([data-action="edit-walk-in-detail"]) .modal-foot>.spacer,.modal:has([data-action="edit-walk-in-detail"]) .modal-foot>[data-action="close-modal"]{display:none}.modal:has([data-action="edit-walk-in-detail"]) .modal-foot>.btn{width:100%;min-width:0;height:auto;min-height:38px;padding:6px 8px;white-space:normal;font-size:11px;line-height:1.2}}
+    @media(max-width:700px){
+      .backdrop{place-items:end center;padding:0}
+      .modal,.modal.narrow{display:flex;flex-direction:column;width:min(100%,520px);max-height:min(88vh,760px);max-height:min(88dvh,760px);overflow:hidden;border-radius:16px 16px 0 0;border-bottom:0}
+      .modal-head{flex:none;padding:14px 16px}
+      .modal-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 16px}
+      .modal-foot{flex:none;flex-wrap:wrap;justify-content:flex-end;gap:7px;padding:10px 14px max(10px,env(safe-area-inset-bottom))}
+      .modal-foot>.spacer{display:none}
+      .modal-foot>.btn{width:auto;max-width:100%;min-width:0;height:auto;min-height:38px;padding:7px 10px;white-space:normal;font-size:11px;line-height:1.2}
+      .modal:has([data-action="new-at-table"]) .modal-foot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 14px max(10px,env(safe-area-inset-bottom))}
+      .modal:has([data-action="new-at-table"]) .modal-foot>[data-action="close-modal"]{display:none}
+      .modal:has([data-action="new-at-table"]) .modal-foot>.btn{width:100%;justify-content:center}
+      .modal:has(.table-detail-card) .table-detail-card{margin:0;padding:8px 0 13px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+      .modal:has(.table-detail-card) .table-detail-head{margin-bottom:5px}
+      .modal:has(.table-detail-card) .table-detail-head>.icon-btn,.modal:has(.table-detail-card) .table-detail-tenant .name{display:none}
+      .modal:has(.table-detail-card) .table-detail-tenant{display:flex;align-items:center;justify-content:space-between;padding:3px 0 8px}
+      .modal:has(.table-detail-card) .table-detail-tenant .count{font-size:22px}
+      .modal:has(.table-detail-card) .table-detail-status{padding:8px 0}
+      .modal:has(.table-detail-card) .table-detail-actions .stack{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+      .modal:has(.table-detail-card) .table-detail-actions .mini-action{width:100%;min-width:0;height:auto;min-height:38px;padding:7px 8px;white-space:normal;font-size:11px;line-height:1.2}
+      .modal .table-visit-row{grid-template-columns:42px minmax(0,1fr);grid-template-areas:"time info" "time status" "time actions";gap:7px 9px;align-items:start;padding:12px 0}
+      .modal .table-visit-row>.time-mark{align-self:start}
+      .modal .table-visit-row>.booking-info{width:auto}
+      .modal .table-visit-row>.status{justify-self:start}
+      .modal .table-visit-row>.booking-actions{display:flex;justify-content:flex-start;gap:6px;flex-wrap:wrap;min-width:0}
+      .modal .table-visit-row>.booking-actions>.btn{width:auto;max-width:100%;min-width:0;height:auto;min-height:34px;padding:6px 8px;white-space:normal;font-size:10px;line-height:1.2}
+    }
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+  </style>
 </head>
 <body>
   <div class="app" id="app"></div>
@@ -485,14 +579,14 @@
       const group=state.groups.find(tableGroup=>tableGroup.includes(tableId)),memberIds=group||[tableId],meta=allTables.find(table=>table.id===tableId)||{id:tableId,floor:state.floor,zone:'Khu vực chung'};
       const bookings=state.bookings.filter(booking=>booking.date===state.date&&memberIds.some(memberId=>booking.tableIds.includes(memberId))&&!['cancelled','completed','no-show'].includes(booking.status)).sort((a,b)=>a.time.localeCompare(b.time));
       const walkIns=state.walkIns.filter(walkIn=>walkIn.date===state.date&&memberIds.some(memberId=>walkIn.tableIds.includes(memberId)));
-      const bookingRows=bookings.map(booking=>`<div class="booking-row" data-booking="${booking.id}"><div class="time-mark">${booking.time}</div><div class="booking-info"><strong>${esc(booking.name)}</strong><small>${booking.guests} khách · ${esc(booking.phone)}</small><small>Bàn ${displayTables(booking)} · Cọc ${money(booking.deposit)}</small></div>${statusTag(booking.status)}<button class="btn small" data-select-booking="${booking.id}">Chọn khách</button><button class="btn small" data-table-change-kind="booking" data-table-change-id="${booking.id}">${ico('edit')} Đổi bàn</button></div>`).join('');
-      const walkInRows=walkIns.map(walkIn=>`<div class="table-detail-card"><div class="table-detail-head"><div class="table-detail-header"><h3 class="title">${esc(walkIn.customerName||'Khách lẻ')}</h3><div class="subtitle">${dateLabel(state.date)} · ${walkIn.tableIds.map(esc).join(' + ')}</div></div><button class="icon-btn" data-action="close-modal" aria-label="Đóng">${ico('close')}</button></div><div class="table-detail-tenant"><div class="name">${esc(walkIn.customerName||'Khách lẻ')}</div><div class="count">${walkIn.guests}<small> khách</small></div></div><div class="table-detail-status"><span class="dot"></span><span>${walkIn.status==='arrived'?'Đang sử dụng':'Đã hoàn tất'}</span></div><div class="table-detail-actions"><div class="stack">${walkIn.status==='arrived'?`<button class="mini-action primary" data-complete-walk-in="${walkIn.id}">${ico('check')} Đã đến</button><button class="mini-action" data-complete-walk-in="${walkIn.id}">${ico('check')} Hoàn tất</button><button class="mini-action danger" data-cancel-walk-in="${walkIn.id}">${ico('close')} Hủy</button>`:''}<button class="mini-action" data-edit-walk-in="${walkIn.id}">${ico('edit')} Chỉnh sửa</button><button class="mini-action" data-delete-walk-in="${walkIn.id}">${ico('trash')} Xóa</button></div></div></div>`).join('');
+      const bookingRows=bookings.map(booking=>{const lastName=booking.name.trim().split(/\s+/).pop()||'khách',displayName=lastName.charAt(0).toLocaleUpperCase('vi-VN')+lastName.slice(1),checkInAction=booking.status!=='arrived'&&booking.status!=='completed'?`<button class="btn soft small" data-checkin="${booking.id}" aria-label="Check-in cho ${esc(booking.name)}">${ico('check')} Check-in ${esc(displayName)}</button>`:'';return `<div class="booking-row table-visit-row" data-booking="${booking.id}"><div class="time-mark">${booking.time}</div><div class="booking-info"><strong>${esc(booking.name)}</strong><small>${booking.guests} khách · ${esc(booking.phone)}</small><small>Bàn ${displayTables(booking)} · Cọc ${money(booking.deposit)}</small></div>${statusTag(booking.status)}<div class="booking-actions">${checkInAction}<button class="btn small" data-select-booking="${booking.id}">Chọn khách</button><button class="btn small" data-table-change-kind="booking" data-table-change-id="${booking.id}">${ico('edit')} Đổi bàn</button></div></div>`}).join('');
+      const walkInRows=walkIns.map(walkIn=>{const active=walkIn.status==='arrived',time=walkIn.time||(walkIn.checkIn?new Date(walkIn.checkIn).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'--:--'),status=active?'<span class="status arrived">Đang sử dụng</span>':'<span class="status completed">Đã hoàn tất</span>',activeActions=active?`<button class="btn soft small" data-complete-walk-in="${walkIn.id}">${ico('check')} Hoàn tất</button><button class="btn danger small" data-cancel-walk-in="${walkIn.id}">${ico('close')} Hủy</button>`:'';return `<div class="table-visit-row walk-in-entry" data-walk-in="${walkIn.id}"><div class="time-mark">${esc(time)}</div><div class="booking-info"><strong>${esc(walkIn.customerName||'Khách lẻ')}</strong><small>${walkIn.guests} khách · Khách lẻ</small><small>Bàn ${walkIn.tableIds.map(esc).join(' + ')}</small></div>${status}<div class="booking-actions">${activeActions}<button class="btn small" data-edit-walk-in="${walkIn.id}">${ico('edit')} Chỉnh sửa</button><button class="btn danger small" data-delete-walk-in="${walkIn.id}">${ico('trash')} Xóa</button></div></div>`}).join('');
       const list=bookingRows+walkInRows||'<div class="empty-state">Bàn chưa có booking hoặc khách lẻ trong ngày này.</div>';
-      const checkInActions=bookings.filter(booking=>booking.status!=='arrived'&&booking.status!=='completed').map(booking=>`<button class="btn small" data-checkin="${booking.id}">${ico('check')} Check-in ${esc(booking.name.split(' ').slice(-1)[0])}</button>`).join('');
       const split=group&&state.canManageData?`<button class="btn small" data-action="split-this" data-table-id="${tableId}">${ico('merge')} Tách nhóm bàn</button>`:'';
-      modal(`${tableId} · ${meta.zone}`,`${meta.floor} · ${dateLabel(state.date)} · ${bookings.length} booking · ${walkIns.length} khách lẻ`,`${list}<div class="detail-actions" style="margin-top:13px">${checkInActions}${split}</div>`,`<button class="btn" data-action="close-modal">Đóng</button><span class="spacer"></span><button class="btn" data-action="new-walk-in" data-table-id="${tableId}">${ico('users')} Ghi nhận khách lẻ</button><button class="btn primary" data-action="new-at-table" data-table-id="${tableId}">${ico('plus')} Thêm booking</button>`,true);
+      const extraActions=split?`<div class="detail-actions" style="margin-top:13px">${split}</div>`:'';
+      modal(`${tableId} · ${meta.zone}`,`${meta.floor} · ${dateLabel(state.date)} · ${bookings.length} booking · ${walkIns.length} khách lẻ`,`${list}${extraActions}`,`<button class="btn" data-action="close-modal">Đóng</button><span class="spacer"></span><button class="btn" data-action="new-walk-in" data-table-id="${tableId}">${ico('users')} Ghi nhận khách lẻ</button><button class="btn primary" data-action="new-at-table" data-table-id="${tableId}">${ico('plus')} Thêm booking</button>`,true);
       document.querySelectorAll('.modal .booking-row[data-booking]').forEach(row=>row.addEventListener('click',()=>openBookingDetail(row.dataset.booking)));
-      document.querySelectorAll('[data-checkin]').forEach(button=>button.addEventListener('click',()=>checkIn(button.dataset.checkin)));
+      document.querySelectorAll('[data-checkin]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();checkIn(button.dataset.checkin)}));
       document.querySelectorAll('[data-complete-walk-in]').forEach(button=>button.addEventListener('click',()=>completeWalkIn(button.dataset.completeWalkIn)));
       document.querySelectorAll('[data-cancel-walk-in]').forEach(button=>button.addEventListener('click',()=>cancelWalkIn(button.dataset.cancelWalkIn)));
       document.querySelectorAll('[data-edit-walk-in]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();openWalkIn(walkIns.find(w=>w.id===button.dataset.editWalkIn)?.tableIds || [], button.dataset.editWalkIn);}));
