@@ -212,6 +212,8 @@
 
     const supabase=createClient('https://irmsitqklnqrcqajtqwr.supabase.co','sb_publishable_JEQwtU5dUutr4OzkG3-ASQ_DE2VRQfF');
     let currentUser=null;
+    let sharedDataChannel=null;
+    let realtimeRefreshTimer=null;
     let persistenceQueue=Promise.resolve();
     let persistenceBusy=false;
     let baselineBookings=new Map();
@@ -335,6 +337,26 @@
         if(selectionStart!==null)restoredInput?.setSelectionRange(selectionStart,selectionStart);
       }
     }
+    function scheduleSharedDataRefresh(){
+      clearTimeout(realtimeRefreshTimer);
+      realtimeRefreshTimer=setTimeout(()=>void refreshSharedData(),150);
+    }
+    function unsubscribeFromSharedData(){
+      clearTimeout(realtimeRefreshTimer);
+      realtimeRefreshTimer=null;
+      if(sharedDataChannel){void supabase.removeChannel(sharedDataChannel);sharedDataChannel=null}
+    }
+    function subscribeToSharedData(){
+      unsubscribeFromSharedData();
+      if(!currentUser)return;
+      let channel=supabase.channel(`shared-data-${currentUser.id}`);
+      ['bookings','walk_ins','booking_history','table_groups'].forEach(table=>{
+        channel=channel.on('postgres_changes',{event:'*',schema:'public',table},scheduleSharedDataRefresh);
+      });
+      sharedDataChannel=channel.subscribe(status=>{
+        if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Realtime sync unavailable',status);
+      });
+    }
     function renderLogin(message=''){
       document.getElementById('app').innerHTML=`<main class="auth-screen"><form class="auth-panel" id="login-form"><h1>Nhà Hàng Gánh Kèo</h1><p>Đăng nhập để mở dữ liệu đặt bàn dùng chung.</p><fieldset class="auth-role-field"><legend>Đăng nhập với vai trò</legend><div class="auth-role-options"><label><input type="radio" name="loginRole" value="employee" checked><span>Nhân viên</span></label><label><input type="radio" name="loginRole" value="manager"><span>Quản lý</span></label></div></fieldset><label for="login-email">Email tài khoản</label><input id="login-email" name="email" type="email" autocomplete="username" required><label for="login-password">Mật khẩu</label><input id="login-password" name="password" type="password" autocomplete="current-password" required><button class="btn primary" type="submit">Đăng nhập</button><div class="auth-error" role="alert">${esc(message)}</div></form></main>`;
       document.getElementById('login-form').addEventListener('submit',async event=>{
@@ -356,11 +378,12 @@
           renderLogin(`Tài khoản này được cấp quyền ${state.role}, không phải vai trò đã chọn.`);return;
         }
         render();
+        subscribeToSharedData();
       }catch(error){console.error(error);currentUser=null;renderLogin(`Không tải được dữ liệu Supabase: ${error.message}`)}
     }
     async function startApp(){
       supabase.auth.onAuthStateChange(event=>{
-        if(event==='SIGNED_OUT'){currentUser=null;state.bookings=[];state.walkIns=[];state.history=[];state.groups=[];renderLogin()}
+        if(event==='SIGNED_OUT'){unsubscribeFromSharedData();currentUser=null;state.bookings=[];state.walkIns=[];state.history=[];state.groups=[];renderLogin()}
       });
       const {data,error}=await supabase.auth.getSession();
       if(error){renderLogin(error.message);return}

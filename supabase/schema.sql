@@ -68,6 +68,24 @@ create table if not exists public.user_roles (
   created_at timestamptz not null default now()
 );
 
+-- Enable Realtime events used to refresh data across devices.
+do $$
+declare
+  target_name text;
+begin
+  foreach target_name in array array['bookings', 'walk_ins', 'booking_history', 'table_groups'] loop
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = target_name
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', target_name);
+    end if;
+  end loop;
+end $$;
+
 -- ------------------------------------------------------------
 -- 2. Đồng bộ bảng đã tồn tại (chạy cho database đang dùng)
 -- ------------------------------------------------------------
