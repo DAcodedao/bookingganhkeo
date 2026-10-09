@@ -271,7 +271,7 @@
       state.canManageData=roleResult.role==='manager';
       state.role=state.canManageData?'Quản lý':'Nhân viên';
       baselineBookings=new Map(state.bookings.map(booking=>{const row=bookingToRow(booking);return[row.id,row]}));
-      baselineWalkIns=new Map(walkIns.map(row=>[row.id,row]));
+      baselineWalkIns=new Map(state.walkIns.map(walkIn=>[walkIn.id,walkInToRow(walkIn)]));
       baselineHistory=new Map(history.map(row=>[row.id,row]));
       baselineGroups=new Map(groups.map(row=>[row.id,row]));
       groupIdByKey.clear();groups.forEach(row=>groupIdByKey.set(groupKey(row.table_ids||[]),row.id));
