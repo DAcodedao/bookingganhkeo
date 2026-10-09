@@ -321,11 +321,19 @@
       return groupIds.size!==baselineGroups.size||[...baselineGroups.keys()].some(id=>!groupIds.has(id));
     }
     async function refreshSharedData(){
-      if(!currentUser||persistenceBusy||state.modal||document.activeElement?.matches('input,select,textarea')||hasUnsavedChanges())return;
+      if(!currentUser||persistenceBusy||state.modal||hasUnsavedChanges())return;
+      const activeInput=document.activeElement?.matches('[data-search],[data-customer-search],[data-date-from],[data-date-to]')?document.activeElement:null;
+      const focusAttribute=activeInput?['data-search','data-customer-search','data-date-from','data-date-to'].find(attribute=>activeInput.hasAttribute(attribute)):null;
+      const selectionStart=typeof activeInput?.selectionStart==='number'?activeInput.selectionStart:null;
       const before=JSON.stringify({bookings:state.bookings.map(bookingToRow),walkIns:state.walkIns.map(walkInToRow),history:state.history.map(({id,at,by,action,subject})=>({id,at,by,action,subject})),groups:state.groups.map(groupKey).sort()});
       try{await loadSharedData()}catch(error){console.warn('Shared data refresh failed',error);return}
       const after=JSON.stringify({bookings:state.bookings.map(bookingToRow),walkIns:state.walkIns.map(walkInToRow),history:state.history.map(({id,at,by,action,subject})=>({id,at,by,action,subject})),groups:state.groups.map(groupKey).sort()});
-      if(before!==after)render();
+      if(before!==after){
+        render();
+        const restoredInput=focusAttribute?document.querySelector(`[${focusAttribute}]`):null;
+        restoredInput?.focus();
+        if(selectionStart!==null)restoredInput?.setSelectionRange(selectionStart,selectionStart);
+      }
     }
     function renderLogin(message=''){
       document.getElementById('app').innerHTML=`<main class="auth-screen"><form class="auth-panel" id="login-form"><h1>Nhà Hàng Gánh Kèo</h1><p>Đăng nhập để mở dữ liệu đặt bàn dùng chung.</p><fieldset class="auth-role-field"><legend>Đăng nhập với vai trò</legend><div class="auth-role-options"><label><input type="radio" name="loginRole" value="employee" checked><span>Nhân viên</span></label><label><input type="radio" name="loginRole" value="manager"><span>Quản lý</span></label></div></fieldset><label for="login-email">Email tài khoản</label><input id="login-email" name="email" type="email" autocomplete="username" required><label for="login-password">Mật khẩu</label><input id="login-password" name="password" type="password" autocomplete="current-password" required><button class="btn primary" type="submit">Đăng nhập</button><div class="auth-error" role="alert">${esc(message)}</div></form></main>`;
@@ -772,7 +780,9 @@
     document.addEventListener('dragstart',e=>{const slot=e.target.closest('.table-card .walk-in-slot[data-walk-in]');if(slot)e.dataTransfer.setData('text/walk-in',slot.dataset.walkIn)});
     document.addEventListener('drop',e=>{const card=e.target.closest('.table-card[data-table]'),id=e.dataTransfer.getData('text/walk-in');if(card&&id)moveWalkIn(id,card.dataset.table)});
     document.addEventListener('click',e=>{const walkInSlot=e.target.closest('.table-card .slot[data-walk-in]');if(walkInSlot?.isConnected){openWalkInDetail(walkInSlot.dataset.walkIn);return}const slot=e.target.closest('.table-card .slot[data-booking]');if(slot?.isConnected){openTable(slot.closest('[data-table]').dataset.table);return}const row=e.target.closest('tr[data-booking],.modal .booking-row[data-booking]');if(row?.isConnected)openBookingDetail(row.dataset.booking)});
-    startApp();setInterval(updateElapsed,1000);setInterval(()=>void refreshSharedData(),10000);
+    window.addEventListener('focus',()=>void refreshSharedData());
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshSharedData()});
+    startApp();setInterval(updateElapsed,1000);setInterval(()=>void refreshSharedData(),5000);
   </script>
 </body>
 </html>
