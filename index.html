@@ -386,7 +386,7 @@
     const dateLabel=(d,opts={weekday:'long',day:'numeric',month:'long',year:'numeric'})=>new Intl.DateTimeFormat('vi-VN',opts).format(new Date(d+'T12:00:00'));
     const statusTag=s=>`<span class="status ${esc(s)}">${statusNames[s]||s}</span>`;
     const displayTables=b=>b.tableIds.map(t=>esc(t)).join(' + ');
-    const walkInDisplayName=walkIn=>walkIn.customerName?`Khách lẻ · ${walkIn.customerName}`:'Khách lẻ';
+    const walkInDisplayName=walkIn=>walkIn.customerName&&walkIn.customerName!=='Khách lẻ'?`Khách lẻ · ${walkIn.customerName}`:'Khách lẻ';
     const walkInDisplayCount=walkIn=>`${walkIn.guests} khách`;
     const dayBookings=()=>state.bookings.filter(b=>b.date===state.date&&b.status!=='cancelled'&&b.status!=='completed'&&b.status!=='no-show').sort((a,b)=>a.time.localeCompare(b.time));
     const bookingsForTable=(id)=>state.bookings.filter(b=>b.date===state.date&&b.tableIds.includes(id)&&!['cancelled','completed','no-show'].includes(b.status)).sort((a,b)=>a.time.localeCompare(b.time));
@@ -414,7 +414,7 @@
       const bookings=state.bookings.filter(booking=>booking.date===state.date&&memberIds.some(memberId=>booking.tableIds.includes(memberId))&&!['cancelled','completed','no-show'].includes(booking.status)).sort((a,b)=>a.time.localeCompare(b.time));
       const walkIns=state.walkIns.filter(walkIn=>walkIn.date===state.date&&walkIn.status==='arrived'&&memberIds.some(memberId=>walkIn.tableIds.includes(memberId)));
       let className='';if(bookings.some(booking=>booking.status==='arrived')||walkIns.length)className='has-arrived';else if(bookings.length)className='has-booking';
-      const bookingSlots=bookings.slice(0,2).map(booking=>`<div draggable="true" class="slot ${booking.status}" data-booking="${booking.id}" title="${esc(booking.name)} · ${esc(booking.time)}">${esc(booking.time)} · ${esc(booking.name.split(' ').slice(-2).join(' '))}</div>`).join('');
+      const bookingSlots=bookings.slice(0,2).map(booking=>`<div draggable="true" class="slot ${booking.status}" data-booking="${booking.id}" title="${esc(booking.name)} · ${esc(booking.time)} · ${esc(booking.guests)} khách">${esc(booking.time)} · ${esc(booking.guests)} khách · ${esc(booking.name.split(' ').slice(-2).join(' '))}</div>`).join('');
       const walkInSlots=walkIns.slice(0,2).map(walkIn=>`<div draggable="true" class="slot arrived walk-in-slot" data-walk-in="${walkIn.id}" title="${esc(walkInDisplayName(walkIn))} · ${esc(walkInDisplayCount(walkIn))}">${esc(walkInDisplayName(walkIn))} · ${esc(walkInDisplayCount(walkIn))}</div>`).join('');
       const moreSlots=bookings.length>2?`<span class="slot-more">+${bookings.length-2} lượt đặt khác</span>`:'';
       const emptyMessage=!bookings.length&&!walkIns.length?'<div class="table-empty">Chưa có lịch đặt</div>':'';
@@ -427,13 +427,14 @@
       const q=state.customerSearch.toLowerCase();
       const groups=new Map();
       const addCustomer=(entry)=>{
-        const key=(entry.phone||entry.name||entry.type||'customer').trim().toLowerCase();
+        const key=entry.type==='walk-in'?'walk-in':(entry.phone||entry.name||'customer').trim().toLowerCase();
         if(!groups.has(key)){
-          groups.set(key,{name:entry.name||'Khách lẻ',phone:entry.phone||'',type:entry.type||'booking',bookings:[],walkIns:[],totalDeposit:0});
+          groups.set(key,{name:entry.type==='walk-in'?'Khách lẻ':entry.name||'Khách hàng',phone:entry.phone||'',type:entry.type||'booking',bookings:[],walkIns:[],walkInNames:new Set(),totalDeposit:0});
         }
         const target=groups.get(key);
         if(entry.type==='walk-in'){
           target.walkIns.push(entry.record);
+          if(entry.name)target.walkInNames.add(entry.name);
         }else{
           target.bookings.push(entry.record);
           target.totalDeposit += Number(entry.record.deposit)||0;
@@ -444,14 +445,14 @@
       rangeBookings.forEach(booking=>addCustomer({name:booking.name,phone:booking.phone||'',type:'booking',record:booking}));
       rangeWalkIns.forEach(walkIn=>addCustomer({name:walkIn.customerName||'Khách lẻ',phone:'',type:'walk-in',record:walkIn}));
       const customerList=[...groups.values()].filter(customer=>{
-        const haystack=`${customer.name} ${customer.phone} ${customer.type}`.toLowerCase();
+        const haystack=`${customer.name} ${customer.phone} ${customer.type} ${[...customer.walkInNames].join(' ')}`.toLowerCase();
         return !q || haystack.includes(q);
       });
       return `${pageHead('Hồ sơ khách','Khách hàng',`Khách hàng từ ${dateRangeText()}`,`${newButton()}${walkInButton()}`)}<section class="panel"><div class="panel-head"><div class="panel-title">${customerList.length} hồ sơ khách</div><label class="toolbar-search">${ico('search')}<input data-customer-search placeholder="Tìm số điện thoại hoặc tên" value="${esc(state.customerSearch)}"></label></div><div>${customerList.map(customer=>{
         const totalVisits=customer.bookings.length + customer.walkIns.length;
         const label=customer.type==='walk-in' ? 'Khách lẻ' : 'Đặt chỗ';
         const metaParts=[customer.phone?esc(customer.phone):'Không có SĐT', `${totalVisits} lượt`, `Cọc ${money(customer.totalDeposit)}`];
-        const showButton = customer.type==='walk-in' ? `<button class="btn small" data-walk-in-history="${esc(customer.name)}">Xem lịch sử</button>` : `<button class="btn small" data-customer-phone="${esc(customer.phone)}">Xem lịch sử</button>`;
+        const showButton = customer.type==='walk-in' ? '<button class="btn small" data-walk-in-history>Xem lịch sử</button>' : `<button class="btn small" data-customer-phone="${esc(customer.phone)}">Xem lịch sử</button>`;
         return `<div class="customer-card"><div class="customer-head"><div><strong>${esc(customer.name)}</strong><div class="customer-meta">${label} · ${metaParts.join(' · ')}</div></div>${showButton}</div></div>`;
       }).join('')||'<div class="empty-state">Chưa có hồ sơ khách trong khoảng ngày này.</div>'}</div></section>`;
     }
@@ -653,7 +654,7 @@
       state.modal={type:'walk-in',id:existing?.id||null,picked};
       const tables=floors.map(floor=>`<div class="field full"><label>${floor.name}</label><div class="table-picker">${visibleFloorTableIds(floor).map(tableId=>`<button type="button" class="table-pick ${picked.has(tableId)?'selected':''}" data-walk-in-table="${tableId}">${tableId}</button>`).join('')}</div></div>`).join('');
       const activeTableNote=[...picked].some(tableId=>state.walkIns.some(walkIn=>walkIn.id!==existing?.id&&walkIn.date===state.date&&walkIn.status==='arrived'&&walkIn.tableIds.includes(tableId))) ? '<div class="note" style="color:var(--warning);margin-top:8px">Bàn đang có lượt khách lẻ đang phục vụ. Nếu nhập số khách bên dưới, hệ thống sẽ cộng vào lượt hiện tại thay vì tạo mới.</div>' : '';
-      const walkInDefault=existing||{guests:2,date:state.date,customerName:'',tableIds:[]};
+      const walkInDefault=existing?{...existing,customerName:existing.customerName==='Khách lẻ'?'':existing.customerName}:{guests:2,date:state.date,customerName:'',tableIds:[]};
       const summaryLabel=existing?`${esc(existing.customerName||'Khách lẻ')} · ${existing.guests} khách`:'Khách lẻ mới';
       const dateField=existing?`<div class="field"><label for="walk-in-date">Ngày *</label><input id="walk-in-date" name="date" type="date" value="${walkInDefault.date}" required></div>`:'';
       const body=`<div class="walkin-form-shell"><div class="walkin-summary"><strong>${summaryLabel}</strong><span class="walkin-badge">${existing?'Sửa':'Mới'}</span></div><form id="walk-in-form"><div class="field"><label for="walk-in-guests">Số khách thêm / mới *</label><input id="walk-in-guests" name="guests" type="number" min="1" value="${walkInDefault.guests}" required></div>${dateField}<div class="field full"><label for="walk-in-customer-name">Tên khách</label><input id="walk-in-customer-name" name="customerName" type="text" placeholder="Không bắt buộc" maxlength="80" value="${esc(walkInDefault.customerName||'')}"></div><div class="field full"><label>Bàn khách sử dụng *</label><div class="table-pick-groups">${tables}</div><div class="note" id="walk-in-picked">${picked.size?`Đã chọn: ${[...picked].join(' + ')}`:'Chọn ít nhất một bàn'}</div>${activeTableNote}</div></form></div>`;
@@ -692,7 +693,7 @@
       const walkInConflict=currentWalkIn?state.walkIns.some(walkIn=>walkIn.id!==currentWalkIn.id&&walkIn.date===walkInDate&&walkIn.time===arrivalTime&&walkIn.status==='arrived'&&walkIn.tableIds.some(tableId=>tableIds.includes(tableId))):state.walkIns.some(walkIn=>walkIn.date===walkInDate&&walkIn.time===arrivalTime&&walkIn.status==='arrived'&&walkIn.tableIds.some(tableId=>tableIds.includes(tableId)));
       if(walkInConflict){toast(`Bàn đã có lượt khách lẻ đang phục vụ lúc ${arrivalTime}`);return}
       if(isEditing && currentWalkIn){
-        currentWalkIn.customerName=customerName||'Khách lẻ';
+        currentWalkIn.customerName=customerName;
         currentWalkIn.guests=Math.max(1,+data.guests||1);
         currentWalkIn.date=walkInDate;
         currentWalkIn.tableIds=[...new Set(tableIds)];
@@ -752,7 +753,7 @@
     function moveBooking(id,table){const b=state.bookings.find(x=>x.id===id);if(!b||b.tableIds.includes(table))return;b.tableIds=[table];audit('Chuyển bàn bằng kéo thả',`${b.name} · ${table}`);save();render();toast(`Đã chuyển ${b.name} sang ${table}`)}
     function moveWalkIn(id,table){const walkIn=state.walkIns.find(item=>item.id===id&&item.status==='arrived');if(!walkIn||walkIn.tableIds.includes(table))return;const bookingConflict=state.bookings.some(booking=>booking.date===walkIn.date&&booking.time===walkIn.time&&booking.tableIds.includes(table)&&!['cancelled','completed','no-show'].includes(booking.status));if(bookingConflict){toast(`Bàn ${table} đã có booking lúc ${walkIn.time}`);return}const oldTable=walkIn.tableIds.join(' + ');walkIn.tableIds=[table];audit('Chuyển khách lẻ bằng kéo thả',`${walkIn.customerName||'Khách lẻ'} · ${oldTable} → ${table}`);save();render();toast(`Đã chuyển khách lẻ sang ${table}`)}
     function customerHistory(phone){const rows=state.bookings.filter(b=>b.phone===phone&&dateInRange(b.date)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));const c=rows[0];modal(`Lịch sử · ${esc(c?.name||'Khách hàng')}`,`${esc(phone)} · ${rows.length} lượt đặt trong khoảng ngày`,rows.map(b=>`<div class="booking-row" data-booking="${b.id}"><div class="time-mark">${b.time}</div><div class="booking-info"><strong>${dateLabel(b.date,{day:'numeric',month:'short',year:'numeric'})} · ${displayTables(b)}</strong><small>${b.guests} khách · cọc ${money(b.deposit)}</small></div>${statusTag(b.status)}</div>`).join('')||'<div class="empty-state">Chưa có lịch sử khách trong khoảng ngày này.</div>','<button class="btn" data-action="close-modal">Đóng</button>',true);document.querySelectorAll('[data-booking]').forEach(x=>x.addEventListener('click',()=>openBookingDetail(x.dataset.booking)))}
-    function walkInHistory(customerName){const rows=state.walkIns.filter(walkIn=>dateInRange(walkIn.date)&&(walkIn.customerName||'Khách lẻ').trim().toLowerCase()===(customerName||'Khách lẻ').trim().toLowerCase()).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));const label=rows[0]?.customerName||customerName||'Khách lẻ';modal(`Lịch sử · ${esc(label)}`,`${rows.length} lượt khách lẻ trong khoảng ngày`,rows.map(walkIn=>`<div class="booking-row" data-walk-in-id="${walkIn.id}"><div class="time-mark">${walkIn.time}</div><div class="booking-info"><strong>${dateLabel(walkIn.date,{day:'numeric',month:'short',year:'numeric'})} · Bàn ${walkIn.tableIds.map(esc).join(' + ')}</strong><small>${walkIn.guests} khách · ${walkIn.status==='arrived'?'Đang sử dụng':'Đã hoàn tất'}</small></div>${statusTag(walkIn.status)}</div>`).join('')||'<div class="empty-state">Chưa có lịch sử khách lẻ trong khoảng ngày này.</div>','<button class="btn" data-action="close-modal">Đóng</button>',true);document.querySelectorAll('[data-walk-in-id]').forEach(x=>x.addEventListener('click',()=>openWalkInDetail(x.dataset.walkInId)))}
+    function walkInHistory(){const rows=state.walkIns.filter(walkIn=>dateInRange(walkIn.date)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));modal('Lịch sử · Khách lẻ',`${rows.length} lượt khách lẻ trong khoảng ngày`,rows.map(walkIn=>`<div class="booking-row" data-walk-in-id="${walkIn.id}"><div class="time-mark">${walkIn.time}</div><div class="booking-info"><strong>${esc(walkIn.customerName||'Khách lẻ')} · ${dateLabel(walkIn.date,{day:'numeric',month:'short',year:'numeric'})} · Bàn ${walkIn.tableIds.map(esc).join(' + ')}</strong><small>${walkIn.guests} khách · ${walkIn.status==='arrived'?'Đang sử dụng':'Đã hoàn tất'}</small></div>${statusTag(walkIn.status)}</div>`).join('')||'<div class="empty-state">Chưa có lịch sử khách lẻ trong khoảng ngày này.</div>','<button class="btn" data-action="close-modal">Đóng</button>',true);document.querySelectorAll('[data-walk-in-id]').forEach(x=>x.addEventListener('click',()=>openWalkInDetail(x.dataset.walkInId)))}
     function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=state.theme;localStorage.setItem('gk-theme',state.theme);render()}
     function updateElapsed(){document.querySelectorAll('[data-elapsed]').forEach(el=>{const seconds=Math.max(0,Math.floor((Date.now()-new Date(el.dataset.elapsed).getTime())/1000));const h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;el.textContent=`${h?`${h} giờ `:''}${String(m).padStart(2,'0')} phút ${String(s).padStart(2,'0')} giây`})}
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
