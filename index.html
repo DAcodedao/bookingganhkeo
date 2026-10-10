@@ -240,7 +240,7 @@
     const normalizeWalkInStatus=status=>['arrived','completed','cancelled'].includes(status)?status:'arrived';
     const demoBookings=()=>{const d=today();return [{id:'demo1',name:'Nguyễn Minh Anh',phone:'0903 218 416',guests:4,date:d,time:'12:00',tableIds:['T01'],deposit:500000,note:'Khách lẻ · thích ngồi gần cửa sổ',status:'deposit',created:new Date().toISOString()},{id:'demo2',name:'Trần Quốc Bảo',phone:'0918 764 220',guests:6,date:d,time:'18:30',tableIds:['L101','L102'],deposit:1000000,note:'Sinh nhật, chuẩn bị bánh nhỏ',status:'confirmed',created:new Date().toISOString()},{id:'demo3',name:'Lê Thu Hà',phone:'0987 331 506',guests:2,date:d,time:'19:00',tableIds:['ST01'],deposit:0,note:'',status:'arrived',checkIn:new Date(Date.now()-24*60000).toISOString(),created:new Date().toISOString()},{id:'demo4',name:'Phạm Gia Huy',phone:'0935 602 147',guests:3,date:d,time:'20:00',tableIds:['L204'],deposit:300000,note:'Bên trong góc, khách quen',status:'confirmed',created:new Date().toISOString()},{id:'demo5',name:'Võ Ngọc Lan',phone:'0908 195 477',guests:5,date:d,time:'20:30',tableIds:['ST08'],deposit:500000,note:'',status:'deposit',created:new Date().toISOString()}]};
     const load=(key,fallback)=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x):fallback}catch{return fallback}};
-    const state={page:'overview',date:today(),dateFrom:today(),dateTo:today(),floor:'ground',theme:localStorage.getItem('gk-theme')||'light',bookings:[],walkIns:[],history:[],groups:[],role:'Nhân viên',canManageData:false,modal:null,search:'',statusFilter:'all',reportMode:'month',mergeMode:false,selectedTables:[],customerSearch:'',month:today().slice(0,7)};
+    const state={page:'overview',date:today(),dateFrom:today(),dateTo:today(),floor:'ground',theme:localStorage.getItem('gk-theme')||'light',bookings:[],walkIns:[],history:[],groups:[],role:'Nhân viên',canManageData:false,modal:null,search:'',statusFilter:'all',reportMode:'month',mergeMode:false,selectedTables:[],customerSearch:'',walkInSearch:'',month:today().slice(0,7)};
     document.documentElement.dataset.theme=state.theme;
     const groupKey=ids=>[...ids].sort().join('|');
     const dateInRange=(value)=>{
@@ -484,20 +484,21 @@
       const rangeBookings=state.bookings.filter(booking=>dateInRange(booking.date));
       const rangeWalkIns=state.walkIns.filter(walkIn=>dateInRange(walkIn.date));
       rangeBookings.forEach(booking=>addCustomer({name:booking.name,phone:booking.phone||'',type:'booking',record:booking}));
-      rangeWalkIns.forEach(walkIn=>addCustomer({name:walkIn.customerName||'Khách lẻ',phone:'',type:'walk-in',record:walkIn}));
       const customerList=[...groups.values()].filter(customer=>{
         const haystack=`${customer.name} ${customer.phone} ${customer.type} ${[...customer.walkInNames].join(' ')}`.toLowerCase();
         return !q || haystack.includes(q);
       });
-      return `${pageHead('Hồ sơ khách','Khách hàng',`Khách hàng từ ${dateRangeText()}`,`${newButton()}${walkInButton()}`)}<section class="panel"><div class="panel-head"><div class="panel-title">${customerList.length} hồ sơ khách</div><label class="toolbar-search">${ico('search')}<input data-customer-search placeholder="Tìm số điện thoại hoặc tên" value="${esc(state.customerSearch)}"></label></div><div>${customerList.map(customer=>{
+      const walkInQuery=state.walkInSearch.trim().toLocaleLowerCase('vi');
+      const walkInList=rangeWalkIns.filter(walkIn=>`${walkIn.customerName||'Khách lẻ'} ${walkIn.date} ${dateLabel(walkIn.date,{day:'numeric',month:'short',year:'numeric'})} ${walkIn.time} ${walkIn.tableIds.join(' ')} ${walkIn.guests}`.toLocaleLowerCase('vi').includes(walkInQuery));
+      const walkInRows=walkInList.map(walkIn=>`<div class="booking-row" data-customer-walk-in="${walkIn.id}"><div class="time-mark">${esc(walkIn.time)}</div><div class="booking-info"><strong>${esc(walkIn.customerName||'Khách lẻ')} · ${dateLabel(walkIn.date,{day:'numeric',month:'short',year:'numeric'})} · Bàn ${walkIn.tableIds.map(esc).join(' + ')}</strong><small>${walkIn.guests} khách · ${walkIn.status==='arrived'?'Đang sử dụng':'Đã hoàn tất'}</small></div>${statusTag(walkIn.status)}</div>`).join('');
+      const walkInEmpty=walkInList.length?'':walkInQuery?'<div class="empty-state">Không tìm thấy lượt khách lẻ phù hợp.</div>':'<div class="empty-state">Chưa có lượt khách lẻ trong khoảng ngày này.</div>';
+      return `${pageHead('Hồ sơ khách','Khách hàng',`Khách hàng từ ${dateRangeText()}`,`${newButton()}${walkInButton()}`)}<section class="panel"><div class="panel-head"><div class="panel-title">${customerList.length} hồ sơ khách đặt chỗ</div><label class="toolbar-search">${ico('search')}<input data-customer-search placeholder="Tìm khách đặt chỗ theo tên hoặc SĐT" value="${esc(state.customerSearch)}"></label></div><div>${customerList.map(customer=>{
         const totalVisits=customer.bookings.length + customer.walkIns.length;
         const totalGuests=[...customer.bookings,...customer.walkIns].reduce((total,record)=>total+(Number(record.guests)||0),0);
         const actualTables=countActualTables([...customer.bookings,...customer.walkIns]);
-        const label=customer.type==='walk-in' ? 'Khách lẻ' : 'Đặt chỗ';
         const metaParts=[customer.phone?esc(customer.phone):'Không có SĐT', `${totalVisits} lượt`, `${totalGuests} khách`, `${actualTables} bàn thực tế`, `Cọc ${money(customer.totalDeposit)}`];
-        const showButton = customer.type==='walk-in' ? '<button class="btn small" data-walk-in-history>Xem lịch sử</button>' : `<button class="btn small" data-customer-phone="${esc(customer.phone)}">Xem lịch sử</button>`;
-        return `<div class="customer-card"><div class="customer-head"><div><strong>${esc(customer.name)}</strong><div class="customer-meta">${label} · ${metaParts.join(' · ')}</div></div>${showButton}</div></div>`;
-      }).join('')||'<div class="empty-state">Chưa có hồ sơ khách trong khoảng ngày này.</div>'}</div></section>`;
+        return `<div class="customer-card"><div class="customer-head"><div><strong>${esc(customer.name)}</strong><div class="customer-meta">Đặt chỗ · ${metaParts.join(' · ')}</div></div><button class="btn small" data-customer-phone="${esc(customer.phone)}">Xem lịch sử</button></div></div>`;
+      }).join('')||'<div class="empty-state">Chưa có hồ sơ khách đặt chỗ trong khoảng ngày này.</div>'}</div></section><section class="panel"><div class="panel-head"><div><div class="panel-title">Lịch sử khách lẻ · ${walkInList.length} lượt</div><div class="panel-note">${rangeWalkIns.length} lượt trong khoảng ngày đã chọn</div></div><label class="toolbar-search">${ico('search')}<input data-walk-in-customer-search placeholder="Tìm khách lẻ theo tên, ngày, giờ, bàn hoặc số khách" aria-label="Tìm khách lẻ" value="${esc(state.walkInSearch)}"></label></div><div class="panel-body">${walkInRows}${walkInEmpty}</div></section>`;
     }
     function depositsPage(){const rows=state.bookings.filter(b=>b.date===state.date&&+b.deposit>0).sort((a,b)=>a.time.localeCompare(b.time));const sum=rows.reduce((n,b)=>n+(+b.deposit||0),0);return `${pageHead('Đối soát','Tiền cọc',`${dateLabel(state.date)} · ${rows.length} khoản cọc`,`${newButton()}${walkInButton()}`)}${statsMarkup([{label:'Tổng tiền cọc',value:money(sum),icon:'wallet',note:'Theo ngày đang chọn'},{label:'Đã nhận cọc',value:rows.length,icon:'check',note:'Booking có ghi nhận tiền cọc'},{label:'Chưa đặt cọc',value:state.bookings.filter(b=>b.date===state.date&&b.status==='confirmed'&&!b.deposit).length,icon:'clock',note:'Cần theo dõi xác nhận'}])}<section class="panel"><div class="panel-head"><div class="panel-title">Chi tiết tiền cọc</div><span class="note">Cọc được ghi nhận trong từng booking</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Giờ</th><th>Khách</th><th>Số điện thoại</th><th>Bàn</th><th>Tiền cọc</th><th>Trạng thái</th></tr></thead><tbody>${rows.map(b=>`<tr data-booking="${b.id}"><td>${b.time}</td><td>${esc(b.name)}</td><td>${esc(b.phone)}</td><td>${displayTables(b)}</td><td><strong>${money(b.deposit)}</strong></td><td>${statusTag(b.status)}</td></tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty-state">Ngày này chưa ghi nhận tiền cọc.</div>'}</div></section>`}
     function reportsPage(){
@@ -815,9 +816,19 @@
     function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=state.theme;localStorage.setItem('gk-theme',state.theme);render()}
     function updateElapsed(){document.querySelectorAll('[data-elapsed]').forEach(el=>{const seconds=Math.max(0,Math.floor((Date.now()-new Date(el.dataset.elapsed).getTime())/1000));const h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;el.textContent=`${h?`${h} giờ `:''}${String(m).padStart(2,'0')} phút ${String(s).padStart(2,'0')} giây`})}
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+    document.addEventListener('input',e=>{
+      const input=e.target.closest('[data-walk-in-customer-search]');
+      if(!input)return;
+      state.walkInSearch=input.value;
+      const cursor=input.selectionStart;
+      render();
+      const restored=document.querySelector('[data-walk-in-customer-search]');
+      restored?.focus();
+      if(typeof cursor==='number')restored?.setSelectionRange(cursor,cursor);
+    });
     document.addEventListener('dragstart',e=>{const slot=e.target.closest('.table-card .walk-in-slot[data-walk-in]');if(slot)e.dataTransfer.setData('text/walk-in',slot.dataset.walkIn)});
     document.addEventListener('drop',e=>{const card=e.target.closest('.table-card[data-table]'),id=e.dataTransfer.getData('text/walk-in');if(card&&id)moveWalkIn(id,card.dataset.table)});
-    document.addEventListener('click',e=>{const walkInSlot=e.target.closest('.table-card .slot[data-walk-in]');if(walkInSlot?.isConnected){openWalkInDetail(walkInSlot.dataset.walkIn);return}const slot=e.target.closest('.table-card .slot[data-booking]');if(slot?.isConnected){openTable(slot.closest('[data-table]').dataset.table);return}const row=e.target.closest('tr[data-booking],.modal .booking-row[data-booking]');if(row?.isConnected)openBookingDetail(row.dataset.booking)});
+    document.addEventListener('click',e=>{const customerWalkIn=e.target.closest('[data-customer-walk-in]');if(customerWalkIn){openWalkInDetail(customerWalkIn.dataset.customerWalkIn);return}const walkInSlot=e.target.closest('.table-card .slot[data-walk-in]');if(walkInSlot?.isConnected){openWalkInDetail(walkInSlot.dataset.walkIn);return}const slot=e.target.closest('.table-card .slot[data-booking]');if(slot?.isConnected){openTable(slot.closest('[data-table]').dataset.table);return}const row=e.target.closest('tr[data-booking],.modal .booking-row[data-booking]');if(row?.isConnected)openBookingDetail(row.dataset.booking)});
     window.addEventListener('focus',()=>void refreshSharedData());
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshSharedData()});
     startApp();setInterval(updateElapsed,1000);setInterval(()=>void refreshSharedData(),5000);
