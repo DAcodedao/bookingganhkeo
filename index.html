@@ -722,10 +722,18 @@
       const warning=document.getElementById('conflict-warning');
       if(conflicts.length&&!warning.dataset.confirmed){
         const overlappingTables=[...new Set(conflicts.flatMap(b=>b.tableIds.filter(t=>state.modal.picked.has(t))))];
-        const newTables=[...state.modal.picked].map(esc).join(' + ');
-        const details=conflicts.map(b=>{const shared=b.tableIds.filter(t=>state.modal.picked.has(t));return `<div style="margin-top:5px"><strong>${esc(b.name)}</strong> · ${esc(b.time)} · bàn ${displayTables(b)} <span style="color:var(--muted)">(trùng ${shared.map(esc).join(' + ')})</span></div>`}).join('');
-        warning.innerHTML=`<div class="warning"><strong>Trùng khung giờ ${esc(data.time)} trên bàn ${overlappingTables.map(esc).join(' + ')}</strong><div style="margin-top:6px">Booking mới: ${esc(data.name)} · bàn ${newTables}</div>${details}<div style="margin-top:7px">Bấm lưu lần nữa để vẫn tiếp tục.</div></div>`;
-        warning.dataset.confirmed='yes';
+        showConfirmation({
+          title:'Bàn đã có booking',
+          message:`Bàn ${overlappingTables.join(' + ')} đã có booking cùng ngày và giờ. Bạn có chắc chắn muốn tiếp tục không?`,
+          details:[
+            {label:'Ngày giờ',value:`${dateLabel(data.date,{day:'numeric',month:'long',year:'numeric'})} · ${data.time}`},
+            ...conflicts.map(b=>({label:b.name,value:`${b.time} · bàn ${b.tableIds.filter(t=>state.modal.picked.has(t)).join(' + ')}`})),
+          ],
+          confirmLabel:'Vẫn tạo booking',
+          iconName:'clock',
+          tone:'danger',
+          onConfirm:()=>{warning.dataset.confirmed='yes';saveBooking()}
+        });
         return;
       }
       const old=state.bookings.find(b=>b.id===id);
