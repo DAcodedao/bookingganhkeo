@@ -233,6 +233,63 @@
     @keyframes toast-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:700px){.demo-chip{display:inline-flex;width:25px;height:25px;min-height:25px;padding:0;justify-content:center;flex:none}.demo-chip [data-sync-label]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
   </style>
+  <style>
+    .stats .stat{--stat-accent:#347b5a;--stat-tint:#e8f2eb;position:relative;overflow:hidden;border-top:3px solid var(--stat-accent);padding-top:11px;animation:stat-color-in .48s cubic-bezier(.2,.7,.25,1) both}
+    .stats .stat:nth-child(2){--stat-accent:#38829c;--stat-tint:#e8f2f5;animation-delay:55ms}
+    .stats .stat:nth-child(3){--stat-accent:#c86450;--stat-tint:#f8ece8;animation-delay:110ms}
+    .stats .stat:nth-child(4){--stat-accent:#a57927;--stat-tint:#f5f0e2;animation-delay:165ms}
+    .stats .stat-icon{background:var(--stat-tint);color:var(--stat-accent);transition:transform .24s cubic-bezier(.2,.7,.25,1),background-color .2s}
+    .stats .stat-value{color:var(--stat-accent)}
+    .stats .stat:hover{border-color:var(--stat-accent);border-top-width:3px;box-shadow:0 10px 22px color-mix(in srgb,var(--stat-accent) 16%,transparent)}
+    .stats .stat:hover .stat-icon{transform:rotate(-7deg) scale(1.08)}
+    .status{border:1px solid color-mix(in srgb,currentColor 18%,transparent)}
+    .status.arrived{display:inline-flex;align-items:center;gap:6px}
+    .status.arrived::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 15%,transparent);animation:arrived-pulse 1.8s ease-in-out infinite}
+    .btn.primary{box-shadow:0 3px 0 color-mix(in srgb,var(--brand-gold) 65%,var(--brand-ink))}
+    .btn.primary:hover{transform:translateY(-2px);box-shadow:0 7px 18px color-mix(in srgb,var(--brand-gold) 34%,transparent)}
+    [data-theme="dark"] .stats .stat:nth-child(1){--stat-accent:#78c79d;--stat-tint:#293e32}
+    [data-theme="dark"] .stats .stat:nth-child(2){--stat-accent:#7bc1d8;--stat-tint:#293b42}
+    [data-theme="dark"] .stats .stat:nth-child(3){--stat-accent:#ec9886;--stat-tint:#432f2b}
+    [data-theme="dark"] .stats .stat:nth-child(4){--stat-accent:#e4c56d;--stat-tint:#403923}
+    @keyframes stat-color-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes arrived-pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,currentColor 8%,transparent)}}
+  </style>
+  <style>
+    :root{--radius:10px;--shadow:0 12px 30px color-mix(in srgb,var(--ink) 7%,transparent)}
+    body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--green-2) 30%,var(--bg)) 0,transparent 360px);transition:background-color .24s,color .24s}
+    .sidebar{background-image:linear-gradient(160deg,color-mix(in srgb,var(--green) 34%,#17271f),#17271f 60%,#111d17);border-right-color:color-mix(in srgb,var(--green) 24%,transparent)}
+    .brand{border-bottom-color:color-mix(in srgb,var(--green) 25%,transparent)}
+    .brand img{transition:transform .24s,box-shadow .24s}
+    .brand img:hover{transform:rotate(-4deg) scale(1.06);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand-gold) 48%,transparent)}
+    .nav-btn{border-radius:8px;transition:background-color .18s,color .18s,transform .18s,box-shadow .18s}
+    .sidebar .nav-btn:not(.active):hover{transform:translateX(2px)}
+    .sidebar .nav-btn.active{box-shadow:inset 3px 0 var(--brand-gold),0 5px 16px color-mix(in srgb,var(--green) 15%,transparent)}
+    .topbar{border-bottom-color:color-mix(in srgb,var(--green) 14%,var(--line))}
+    .top-range{background:color-mix(in srgb,var(--green-2) 32%,var(--paper))!important;border-color:color-mix(in srgb,var(--green) 16%,var(--line))!important}
+    .content{padding-top:28px}
+    .page-head{padding-bottom:15px;border-bottom:1px solid color-mix(in srgb,var(--green) 13%,var(--line))}
+    .eyebrow{display:table;width:fit-content;max-width:100%;padding:4px 9px;border:1px solid color-mix(in srgb,var(--green) 16%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--green-2) 72%,var(--paper));color:var(--green);font-weight:700}
+    .page-title{line-height:1.15}
+    .panel{border-color:color-mix(in srgb,var(--green) 12%,var(--line));box-shadow:0 5px 18px color-mix(in srgb,var(--ink) 4%,transparent);transition:border-color .2s,box-shadow .2s,transform .2s}
+    .panel-head{background:linear-gradient(90deg,color-mix(in srgb,var(--green-2) 42%,var(--paper)),var(--paper) 72%)}
+    .panel-title{line-height:1.3}
+    .stat{border-color:color-mix(in srgb,var(--green) 12%,var(--line));box-shadow:0 5px 18px color-mix(in srgb,var(--ink) 4%,transparent)}
+    .table-card{border-color:color-mix(in srgb,var(--green) 15%,var(--line));transition:transform .2s cubic-bezier(.2,.7,.25,1),border-color .2s,box-shadow .2s}
+    .table-card:active{transform:scale(.975)}
+    .status{border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:999px;font-weight:700}
+    .btn{border-radius:8px;font-weight:650;transition:transform .16s,box-shadow .18s,background-color .18s,border-color .18s,color .18s}
+    .btn:not(:disabled):active{transform:scale(.975)}
+    .icon-btn{border-radius:8px;transition:transform .18s,background-color .18s,color .18s}
+    .icon-btn:hover{transform:translateY(-1px);background:var(--green-2);color:var(--green)}
+    .field input,.field select,.field textarea,.toolbar-search input,.filter-select{transition:border-color .16s,box-shadow .16s,background-color .16s}
+    .field input:focus,.field select:focus,.field textarea:focus,.toolbar-search input:focus,.filter-select:focus{border-color:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 13%,transparent)}
+    .data-table th{background:color-mix(in srgb,var(--green-2) 52%,var(--paper));border-bottom-color:var(--line)}
+    .data-table tbody tr{transition:background-color .16s}
+    .modal,.confirm-dialog{border-color:color-mix(in srgb,var(--green) 15%,var(--line))}
+    .mobile-nav{border-top-color:color-mix(in srgb,var(--green) 18%,var(--line))}
+    @media(max-width:700px){.content{padding-top:20px}.page-head{padding-bottom:12px}.panel{box-shadow:0 3px 12px color-mix(in srgb,var(--ink) 4%,transparent)}.mobile-nav .nav-btn.active{box-shadow:inset 0 2px var(--brand-gold)}}
+    @media(prefers-reduced-motion:reduce){.brand img:hover,.sidebar .nav-btn:not(.active):hover,.btn:not(:disabled):active,.table-card:active,.icon-btn:hover{transform:none}}
+  </style>
 </head>
 <body>
   <div class="app" id="app"></div>
