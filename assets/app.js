@@ -44,6 +44,7 @@ import { createViews } from './views.js';
     const demoBookings=()=>{const d=today();return [{id:'demo1',name:'Nguyễn Minh Anh',phone:'0903 218 416',guests:4,date:d,time:'12:00',tableIds:['T01'],deposit:500000,note:'Khách lẻ · thích ngồi gần cửa sổ',status:'deposit',created:new Date().toISOString()},{id:'demo2',name:'Trần Quốc Bảo',phone:'0918 764 220',guests:6,date:d,time:'18:30',tableIds:['L101','L102'],deposit:1000000,note:'Sinh nhật, chuẩn bị bánh nhỏ',status:'confirmed',created:new Date().toISOString()},{id:'demo3',name:'Lê Thu Hà',phone:'0987 331 506',guests:2,date:d,time:'19:00',tableIds:['ST01'],deposit:0,note:'',status:'arrived',checkIn:new Date(Date.now()-24*60000).toISOString(),created:new Date().toISOString()},{id:'demo4',name:'Phạm Gia Huy',phone:'0935 602 147',guests:3,date:d,time:'20:00',tableIds:['L204'],deposit:300000,note:'Bên trong góc, khách quen',status:'confirmed',created:new Date().toISOString()},{id:'demo5',name:'Võ Ngọc Lan',phone:'0908 195 477',guests:5,date:d,time:'20:30',tableIds:['ST08'],deposit:500000,note:'',status:'deposit',created:new Date().toISOString()}]};
     const load=(key,fallback)=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x):fallback}catch{return fallback}};
     const state={page:'overview',date:today(),dateFrom:today(),dateTo:today(),floor:'ground',theme:localStorage.getItem('gk-theme')||'light',bookings:[],walkIns:[],history:[],groups:[],role:'Nhân viên',canManageData:false,modal:null,search:'',statusFilter:'all',reportMode:'month',mergeMode:false,selectedTables:[],selectedActiveSessions:[],activeSessionsOpen:false,customerSearch:'',walkInSearch:'',customerVenueOpen:{gk2:false,vip3:false},customerFlowOpen:{gk2Booking:false,gk2WalkIn:false,vip3Booking:false,vip3WalkIn:false},bookingVenueOpen:{gk2:false,vip3:false},reportVenueOpen:{gk2:false,vip3:false},reportFlowOpen:{gk2Booking:false,gk2WalkIn:false,vip3Booking:false,vip3WalkIn:false},month:today().slice(0,7),overdueWarning:localStorage.getItem('gk-overdue-warning')!=='false'};
+    state.conflictWarning=localStorage.getItem('gk-conflict-warning')!=='false';
     document.documentElement.dataset.theme=state.theme;
     const groupKey=ids=>[...ids].sort().join('|');
     const dateInRange=(value)=>{
@@ -318,6 +319,14 @@ import { createViews } from './views.js';
       organizeCustomerVenues();
       addDeletePasswordSetting();
       updateUnitLabels();
+      const conflictWarningToggle=document.querySelector('[data-setting-conflict]');
+      if(conflictWarningToggle){
+        conflictWarningToggle.checked=state.conflictWarning;
+        conflictWarningToggle.addEventListener('change',event=>{
+          state.conflictWarning=event.currentTarget.checked;
+          localStorage.setItem('gk-conflict-warning',String(state.conflictWarning));
+        });
+      }
       if(state.page==='overview'){
         const stats=document.querySelector('.content .stats');
         if(stats){stats.outerHTML=statsMarkup(overviewDailyMetrics());document.querySelector('.content .stats')?.classList.add('overview-stats')}
@@ -344,6 +353,13 @@ import { createViews } from './views.js';
       }
       document.querySelector('.active-session-panel')?.addEventListener('toggle',event=>{state.activeSessionsOpen=event.currentTarget.open});
       bind();bindResetDataConfirmation();enableTimeDrag();bindTableAddButtons();bindOverviewActions();
+      requestAnimationFrame(()=>{
+        const mobileNav=document.querySelector('.mobile-nav'),activeMobileNav=mobileNav?.querySelector(`[data-page="${state.page}"]`);
+        if(mobileNav&&activeMobileNav){
+          const navRect=mobileNav.getBoundingClientRect(),activeRect=activeMobileNav.getBoundingClientRect();
+          mobileNav.scrollLeft+=activeRect.left-navRect.left-(mobileNav.clientWidth-activeRect.width)/2;
+        }
+      });
     }
     const {
       bindResetDataConfirmation,

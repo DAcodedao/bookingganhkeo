@@ -108,7 +108,7 @@ export function createBookingsActions(context) {
       const walkInConflicts=state.walkIns.filter(walkIn=>walkIn.date===data.date&&walkIn.status==='arrived'&&walkIn.tableIds.some(tableId=>state.modal.picked.has(tableId)));
       const conflicts=[...bookingConflicts.map(booking=>({kind:'Booking',name:booking.name,time:booking.time,tableIds:booking.tableIds})),...walkInConflicts.map(walkIn=>({kind:'Khách lẻ',name:walkIn.customerName||'Khách lẻ',time:walkIn.time,tableIds:walkIn.tableIds}))];
       const warning=document.getElementById('conflict-warning');
-      if(conflicts.length&&!warning.dataset.confirmed){
+      if(state.conflictWarning&&conflicts.length&&!warning.dataset.confirmed){
         showTableConflictConfirmation(data.date,data.time,[...state.modal.picked],conflicts,'Vẫn tạo booking',()=>{warning.dataset.confirmed='yes';saveBooking()});
         return;
       }

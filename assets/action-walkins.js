@@ -76,7 +76,7 @@ export function createWalkinsActions(context) {
       const bookingConflicts=state.bookings.filter(booking=>booking.date===walkInDate&&booking.tableIds.some(tableId=>tableIds.includes(tableId))&&!['cancelled','completed','no-show'].includes(booking.status));
       const walkInConflicts=state.walkIns.filter(walkIn=>walkIn.id!==currentWalkIn?.id&&walkIn.date===walkInDate&&walkIn.status==='arrived'&&walkIn.tableIds.some(tableId=>tableIds.includes(tableId)));
       const conflicts=[...bookingConflicts.map(booking=>({kind:'Booking',name:booking.name,time:booking.time,tableIds:booking.tableIds})),...walkInConflicts.map(walkIn=>({kind:'Khách lẻ',name:walkIn.customerName||'Khách lẻ',time:walkIn.time,tableIds:walkIn.tableIds}))];
-      if(conflicts.length&&!state.modal.conflictConfirmed){
+      if(state.conflictWarning&&conflicts.length&&!state.modal.conflictConfirmed){
         showTableConflictConfirmation(walkInDate,arrivalTime,tableIds,conflicts,'Vẫn ghi nhận khách lẻ',()=>{state.modal.conflictConfirmed=true;saveWalkIn()});
         return;
       }
